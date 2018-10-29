@@ -39,9 +39,15 @@ print("========================================")
 cardnum = input("请输入东南大学一卡通号：")
 print("说明：为了保护您的密码，输入密码不会有任何回显，正常输入后按回车即可。")
 password = getpass.getpass("请输入统一身份认证密码：")
-print("说明：学期请以类似 17-18-3 的格式输入，如需导出多个学期，各学期请以半角逗号分隔。")
+print("说明：学期请以类似 17-18-3 的格式输入，如需导出多个学期，各学期请以半角逗号分隔。若只希望导出近期物理实验或考试，直接按回车即可。")
 terms = input("请输入要导出的学期：")
+print("说明：教务处提供的课表中，物理实验没有准确的时间和地点，而且缺少选做实验的课程，一般情况下建议删除此处课表中的物理实验，之后从物理实验中心导出近期物理实验。")
+delete_phylab = input("删除课表中的物理实验(Y/N)？")
+delete_phylab = (delete_phylab.upper() == "Y")
+phylab = input("从物理实验中心导出近期物理实验(Y/N)？")
+phylab = (phylab.upper() == "Y")
 exam = input("导出近期考试日程(Y/N)？")
+exam = (exam.upper() == "Y")
 print("========================================")
 
 print("登录中……")
@@ -49,12 +55,10 @@ postdata = {"cardnum": cardnum, "password": password, "gpassword": "", "platform
 r = requests.post("https://myseu.cn/ws3/auth", data=postdata)
 if r.status_code != 200:
     print("连接失败")
-    input()
     exit()
 responsedata = r.json()
 if responsedata["success"] != True:
     print("用户名或密码错误")
-    input()
     exit()
 token = responsedata["result"]
 
@@ -70,33 +74,46 @@ if terms:
         r = requests.get("https://myseu.cn/ws3/api/curriculum", params=params, headers=headers)
         if r.status_code != 200:
             print("连接失败")
-            input()
             exit()
         responsedata = r.json()
         if responsedata["success"] != True:
             print("学期" + term + "获取失败")
-            input()
             exit()
         for course in responsedata["result"]["curriculum"]:
             for event in course["events"]:
-                f.writeevent(course["courseName"], course["location"], event["startTime"], event["endTime"])
+                if not(delete_phylab and course["courseName"].find("物理实验")):
+                    f.writeevent(course["courseName"], course["location"], event["startTime"], event["endTime"])
 
-if exam.upper() == "Y":
+if phylab:
+    print("获取物理实验中……")
+    r = requests.get("https://myseu.cn/ws3/api/phylab", headers=headers)
+    if r.status_code != 200:
+        print("连接失败")
+        exit()
+    responsedata = r.json()
+    if responsedata["success"] != True:
+        print("物理实验获取失败")
+        exit()
+    if len(responsedata["result"]) == 0:
+        print("注意：暂未查询到近期物理实验。")
+    for event in responsedata["result"]:
+        f.writeevent("物理" + event["type"] + "：" + event["labName"], "九龙湖物理实验中心（田家炳楼）" + event["location"], event["startTime"], event["endTime"])
+
+if exam:
     print("获取考试中……")
     r = requests.get("https://myseu.cn/ws3/api/exam", headers=headers)
     if r.status_code != 200:
         print("连接失败")
-        input()
         exit()
     responsedata = r.json()
     if responsedata["success"] != True:
         print("考试获取失败")
-        input()
         exit()
+    if len(responsedata["result"]) == 0:
+        print("注意：暂未查询到近期考试日程。")
     for event in responsedata["result"]:
         f.writeevent(event["courseName"] + " 考试", event["campus"] + event["location"], event["startTime"], event["endTime"])
 
 f.writeend()
 f.close()
 print("已导出为 curriculum.ics")
-input()
