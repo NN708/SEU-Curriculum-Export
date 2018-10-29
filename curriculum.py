@@ -1,5 +1,6 @@
 import requests
 import time
+import getpass
 
 def converttime(timestamp):
     localtime = time.localtime(timestamp / 1000)
@@ -36,8 +37,9 @@ END:VTIMEZONE
 print("东南大学课程表导出工具")
 print("========================================")
 cardnum = input("请输入东南大学一卡通号：")
-password = input("请输入统一身份认证密码：")
-print("注意：学期请以类似 17-18-3 的格式输入，如需导出多个学期，各学期请以半角逗号分隔。")
+print("说明：为了保护您的密码，输入密码不会有任何回显，正常输入后按回车即可。")
+password = getpass.getpass("请输入统一身份认证密码：")
+print("说明：学期请以类似 17-18-3 的格式输入，如需导出多个学期，各学期请以半角逗号分隔。")
 terms = input("请输入要导出的学期：")
 exam = input("导出近期考试日程(Y/N)？")
 print("========================================")
