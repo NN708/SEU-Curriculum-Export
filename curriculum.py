@@ -43,11 +43,11 @@ print("说明：学期请以类似 17-18-3 的格式输入，如需导出多个�
 terms = input("请输入要导出的学期：")
 print("说明：教务处提供的课表中，物理实验没有准确的时间和地点，而且缺少选做实验的课程，一般情况下建议删除此处课表中的物理实验，之后从物理实验中心导出近期物理实验。")
 delete_phylab = input("删除课表中的物理实验(Y/N)？")
-delete_phylab = (delete_phylab.upper() == "Y" or delete_phylab.upper() == "y")
+delete_phylab = (delete_phylab.upper() == "Y")
 phylab = input("从物理实验中心导出近期物理实验(Y/N)？")
-phylab = (phylab.upper() == "Y" or phylab.upper() == "y")
+phylab = (phylab.upper() == "Y")
 exam = input("导出近期考试日程(Y/N)？")
-exam = (exam.upper() == "Y" or exam.upper() == "y")
+exam = (exam.upper() == "Y")
 print("========================================")
 
 print("登录中……")
@@ -82,7 +82,7 @@ if terms:
         for course in responsedata["result"]["curriculum"]:
             if "events" in course.keys():
                 for event in course["events"]:
-                    if not (delete_phylab and not bool(course["courseName"].find("物理实验"))):                    
+                    if not (delete_phylab and "物理实验" in course["courseName"]):                    
                         f.writeevent(course["courseName"], course["location"], event["startTime"], event["endTime"])
             else:
                 print("注意：课程表中暂无" + course["courseName"] + "课程的具体时间安排，程序自动跳过该课程。")
