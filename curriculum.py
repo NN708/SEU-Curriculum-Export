@@ -82,7 +82,7 @@ if terms:
         for course in responsedata["result"]["curriculum"]:
             if "events" in course.keys():
                 for event in course["events"]:
-                    if not (delete_phylab and "物理实验" in course["courseName"]):                    
+                    if not (delete_phylab and "物理实验" in course["courseName"]):
                         f.writeevent(course["courseName"], course["location"], event["startTime"], event["endTime"])
             else:
                 print("注意：课程表中暂无" + course["courseName"] + "课程的具体时间安排，程序自动跳过该课程。")
